@@ -1,0 +1,26 @@
+
+    # Large data files
+    *.nc
+    *.hdf5
+    *.tif
+    *.geotiff
+    data/raw/large/
+
+    # Temporary files
+    *.tmp
+    *.temp
+    ~*
+
+    # Python
+    __pycache__/
+    *.py[cod]
+    .ipynb_checkpoints/
+
+    # R
+    .Rhistory
+    .RData
+    .Rproj.user/
+
+    # System files
+    .DS_Store
+    Thumbs.db 
