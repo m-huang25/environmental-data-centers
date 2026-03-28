@@ -1,30 +1,8 @@
-# Check script is running
-#cat("Script started\n")#
-#cat("R version:", R.version.string, "\n")
-#if ("IRkernel" %in% loadedNamespaces()) {
-#  cat("Running in Jupyter via IRkernel\n")
-#} else if (!interactive()) {
-#  cat("Running via Rscript (non-interactive)\n")
-#} else {
-#  cat("Running in an interactive R session (e.g., RStudio)\n")
-#} 
-
 #load libraries
 library(tidyverse)
 
 #Import CSV file on data centers in Virginia
 data_centers <- read.csv("data/processed/pec_data_centers.csv")
-
-#cat("First few rows:\n")
-#print(head(air_sites))
-
-#cat("Number of rows and columns:\n")
-#print(dim(air_sites))
-
-#cat("Column names:\n")
-#print(colnames(air_sites))
-
-#cat("Script finished successfully.\n")
 
 #show first 10 rows
 head(data_centers, 10)
