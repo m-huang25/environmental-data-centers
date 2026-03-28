@@ -24,3 +24,9 @@
     # System files
     .DS_Store
     Thumbs.db 
+
+    # Ignore CoCalc sync notebooks
+    github_cocalc_sync_*.ipynb
+
+    # Ignore checkpoint files
+    *.ipynb_checkpoints
