@@ -1,30 +1,8 @@
-# Check script is running
-#cat("Script started\n")#
-#cat("R version:", R.version.string, "\n")
-#if ("IRkernel" %in% loadedNamespaces()) {
-#  cat("Running in Jupyter via IRkernel\n")
-#} else if (!interactive()) {
-#  cat("Running via Rscript (non-interactive)\n")
-#} else {
-#  cat("Running in an interactive R session (e.g., RStudio)\n")
-#}
-
 #load library
 library(tidyverse)
 
 # Import CSV file on air_emissions for the year 2024 in Virginia. 
 air_sites_emissions <- read.csv("data/processed/air_sites_emissions.csv")
-
-#cat("First few rows:\n")
-#print(head(air_sites))
-
-#cat("Number of rows and columns:\n")
-#print(dim(air_sites))
-
-#cat("Column names:\n")
-#print(colnames(air_sites))
-
-#cat("Script finished successfully.\n")
 
 # Examine the variables of the dataset
 names(air_sites_emissions)
