@@ -16,13 +16,12 @@ The original imported file was renamed from arcgis_table.csv to pec_data_centers
       - Imported table from the source website into Juypter notebook       
       - Renamed column names to lower case
       - Handled missing latitude and longitude values
-      - Selected only relevant columns related to locality                  ("Loudoun County") and build_status ("Existing")
+      - Selected only relevant columns related to locality ("Loudoun County") and build_status ("Existing")
       
 **Variables:** 
 
   - name: locality
-    description: Geographic location or jurisdiction of the
-    data center
+    description: Geographic location or jurisdiction of the data center
     type: string
 
   - name: name
@@ -30,8 +29,7 @@ The original imported file was renamed from arcgis_table.csv to pec_data_centers
     type: string
 
   - name: owner_applicant
-    description: Name of the entity that owns or has
-    applied for the data center
+    description: Name of the entity that owns or has applied for the data center
     type: string
 
   - name: street_address
@@ -85,8 +83,7 @@ The original imported file was renamed from arcgis_table.csv to pec_data_centers
 - Filtered records by principal_product using terms related to data centers (i.e., Data Center, data center, Data center, Data Processing, Information Systems, Communications/Internet, Diesel Generators, Emergency Generation, Backup Power Generation), followed by manual review to remove non-data center facilities.
 - Joined the active_air_sites.csv with the air_sites_emissions.csv by"icid_id" to create a new object called air_emissions_joined. 
 - Joined the air_emissions_joined dataset with the cleaned
-version of pec_data_centers.csv by "address_clean" after
-standardizing the addresses from both datasets. The result was a dataset with information (name of data center, address, latitude and longitude) to make spatial maps. 
+version of pec_data_centers.csv by "address_clean" after standardizing the addresses from both datasets. The result was a dataset with information (name of data center, address, latitude and longitude) to make spatial maps. 
 **Variables:** 
   - name: name
     description: Name of the facility or site
@@ -108,7 +105,7 @@ standardizing the addresses from both datasets. The result was a dataset with in
   - name: icis_id
     description: Unique identifier assigned to the facility     in the Integrated Compliance Information System (ICIS)
     type: string
-**Quality notes,including limitations or caveats: ** 
+**Quality notes,including limitations or caveats**: ** The dataset reflects a snapshot in time (2024) and may not include recent updates or changes.
 **License:** The Virginia DEQ GeoHub provided the data for reference purposes only and are in the public domain; users may copy and use the data with attribution. Data are provided "as is" without warranty of accuracy, completeness, or fitness for a particular purpose, and DEQ assumes no liability for errors or damages resulting from use. Users agree not to use the data for unlawful purposes or attempt to derive personal information. Data should not be used for legal determinations and may be updated or removed without notice. See https://geohub-vadeq.hub.arcgis.com/pages/terms-of-use for full terms.
 
 ## Dataset 3: air_sites_emissions.csv
@@ -144,7 +141,7 @@ standardizing the addresses from both datasets. The result was a dataset with in
     type: string
 **Quality notes, including limitations or caveats:** 
   - Some records may have missing or incomplete values (e.g., emissions data).
-  - The dataset reflects a snapshot in time and may not include recent updates or changes.
+  - The dataset reflects a snapshot in time (2024) and may not include recent updates or changes.
   - Filtering was applied to include only selected variables and relevant records (e.g., specific localities or facility types).
   - Emissions values and facility attributes are based on reported data and may be subject to measurement or reporting uncertainty.
 **License:** The Virginia DEQ GeoHub provided the data for reference purposes only and are in the public domain; users may copy and use the data with attribution. Data are provided "as is" without warranty of accuracy, completeness, or fitness for a particular purpose, and DEQ assumes no liability for errors or damages resulting from use. Users agree not to use the data for unlawful purposes or attempt to derive personal information. Data should not be used for legal determinations and may be updated or removed without notice. See https://geohub-vadeq.hub.arcgis.com/pages/terms-of-use for full terms.
