@@ -2,7 +2,7 @@
 library(tidyverse)
 
 # Import and clean dataset on air montoring sites in Virginia
-air_sites <- read.csv("data/processed/active_air_sites.csv")
+air_sites <- read.csv("data/raw_data/Active_Air_Sites.csv")
 
 # Examine the variables of the dataset
 names(air_sites)
