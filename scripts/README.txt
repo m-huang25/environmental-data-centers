@@ -21,13 +21,13 @@ Run the scripts in the following order:
 08_spatial_analysis.R
 
 Script Descriptions:
-01–03 (Data Cleaning):
+01–03 (Preprocessing):
 Clean and standardize raw datasets, including air sites, emissions data, and data center locations
 
-04 (Data Integration):
+04 (Harmonizing):
 Join emissions data to air site facilities and link to data center locations using identifiers
 
-05 (Data Integration)
+05 (Harmonizing)
 Join results from script 04 to data center locations using standardized addresses
 
 06 (Analysis):
@@ -36,7 +36,7 @@ Perform exploratory data analysis, including how many data centers are emitting 
 07 (Visualizations):
 Generate bar charts and log-scaled box plots
 
-08 (Spatial Analysis):
+08 (Visualizations):
 Convert data to spatial features and create maps to examine geographic patterns and proximity to water bodies
 
 How to Run:

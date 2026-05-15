@@ -1,8 +1,8 @@
-#load libraries
+# Load libraries
 library(tidyverse)
 
 # Import and clean dataset on air montoring sites in Virginia
-air_sites <- read.csv("data/processed/active_air_sites.csv")
+air_sites <- read.csv("data/raw_data/Active_Air_Sites.csv")
 
 # Examine the variables of the dataset
 names(air_sites)
@@ -21,7 +21,7 @@ air_sites_clean <- air_sites %>%
       icis_id = PLA_ICIS_ID
     )
 
-# Determine how many categories are within the "city" and "principal_product" categories
+# List the categories within the "city" and "principal_product" categories
 #unique(air_sites_clean$city)
 #unique(air_sites_clean$principal_product)
 length(unique(air_sites_clean$city))
@@ -33,17 +33,10 @@ air_sites_clean <- air_sites_clean %>%
     filter(city %in% c('Leesburg', 'Ashburn', 'Sterling', 'Aldie', 'Purcellville', 'Potomac Falls', 'Dulles', 'Bluemont', 'Chantilly'))%>% # cities in Loudoun County
     filter(principal_product %in% c('Data Center', 'data center', 'Data center', 'Data Processing', 'Information systems', 'Communications/Internet', 'Diesel Generators', 'Emergency Generation', 'Backup Power Generation')) # data center and data center-related words
 
-air_sites_clean
-
-# Detemine is there are any missing values or NAs
-if (any(is.na(air_sites_clean))) {
-  print("There are missing values")
-} else {
-  print("No missing values ✅")
-}
+glimpse(air_sites_clean)
 
 # Import CSV file on air_emissions for the year 2024 in Virginia. 
-air_sites_emissions <- read.csv("data/processed/air_sites_emissions.csv")
+air_sites_emissions <- read.csv("data/raw_data/Air_Sites_Emissions.csv")
 
 # Examine the variables of the dataset
 names(air_sites_emissions)
@@ -57,7 +50,7 @@ air_sites_emissions_clean <- air_sites_emissions %>%
       pollutant_name = CPL_POLLUTANT_NAME
     )
 
-# List and count the categories within the "pollutant_name" categories
+# List and count the categories within the "pollutant_name" category
 
 unique(air_sites_emissions_clean$pollutant_name)
 length(unique(air_sites_emissions_clean$pollutant_name))
@@ -66,20 +59,7 @@ length(unique(air_sites_emissions_clean$pollutant_name))
 air_sites_emissions_clean <- air_sites_emissions_clean %>%
     select(emissions_year, emission_value, icis_id, pollutant_name)
 
-air_sites_emissions_clean 
-
-# Check if missing values exist
-any(is.na(air_sites_emissions_clean))
-
-# Count total number of missing values
-sum(is.na(air_sites_emissions_clean))
-
-# Examine how many unique identifier have missing emission values
-num_missing_unique_identifiers <- air_sites_emissions_clean %>%
-  filter(is.na(emission_value)) %>%    # keep only rows where emission_value is missing
-  summarise(unique_identifiers_missing_emission_values = n_distinct(icis_id))
-
-num_missing_unique_identifiers
+glimpse(air_sites_emissions_clean) 
 
 # Join acive air site and air site emissions datasets
 
@@ -89,47 +69,16 @@ air_emissions_joined <- air_emissions_joined[complete.cases(air_emissions_joined
 
 glimpse (air_emissions_joined) # data is in long format
 
-# Examine unque number of data centers
-unique(air_emissions_joined$name)
-length(unique(air_emissions_joined$name))
+# Import CSV file on data centers in Virginia
+data_centers <- read.csv("data/raw_data/pec_data_centers.csv")
 
-unique(air_emissions_joined$address)
-length(unique(air_emissions_joined$address))
-
-#Create a table of Cities
-table(air_emissions_joined$city)
-
-# Length of "emission_value" to determine count of unique value
-length(unique(air_emissions_joined$emission_value))
-
-# Analyze how many data centers are emitting each pollutant; distinct data centers can emit more than one pollutant
-
-unique(air_emissions_joined$pollutant_name)
-
-air_emissions_joined %>%
-  filter(principal_product %in% c('Data Center', 'data center', 'Data center', 'Data Processing', 'Information systems', 'Communications/Internet', 'Diesel Generators', 'Emergency Generation', 'Backup Power Generation')) %>%
-  group_by(pollutant_name) %>%
-  summarise(num_data_centers = n()) # num_data_centers is a new column name
-
-#Import CSV file on data centers in Virginia
-data_centers <- read.csv("data/processed/pec_data_centers.csv")
-
-#show first 10 rows
+# Show first 10 rows
 head(data_centers, 10)
 
-# Get the dimensions of the dataframe
-dim(data_centers)
-
-# Examine the variables of the dataset
-names(data_centers)
-
-# Examine the structure of the dataset
-str(data_centers)
-
-#Create new dataframe
+# Create new dataframe
 data_centers_clean <- as.data.frame(data_centers)
 
-#Rename variables
+# Rename variables
 data_centers_clean <- data_centers_clean %>%
   rename(
     object_id = OBJECTID,
@@ -154,13 +103,13 @@ data_centers_clean <- data_centers_clean %>%
 
 # Can disregard #399 and #411 as they are proposed and we only want existing data centers; will filter for existing data centers next  
 
-#Select only relevant columns and rows
+# Select only relevant columns and rows
 data_centers_clean <- data_centers_clean %>%
     select(object_id, locality, name, street_address, owner_applicant, construction_type, build_status,lat, long) %>%
     filter(locality == "Loudoun County")%>% # keep only Loudoun County rows
     filter(build_status == "Existing")   # keep only Existing rows
 
-data_centers_clean
+glimpse(data_centers_clean)
 
 # Standarize the addresses in the air_emissions_joined and data_centers_clean (PEC) datasets
 
@@ -207,7 +156,7 @@ data_centers_clean <- data_centers_clean %>%
    TRUE ~ address_clean
   ))
 
-#  Manually remove addresses 
+# Manually remove addresses 
 
 air_emissions_joined <- air_emissions_joined %>%
   filter(!address_clean %in% c(
@@ -293,21 +242,8 @@ data_centers_clean <- data_centers_clean %>%
     TRUE ~ address_clean
   ))
 
-# Check what doesn't match
-setdiff(air_emissions_joined$address_clean,
-        data_centers_clean$address_clean)
-
-setdiff(data_centers_clean$address_clean,
-        air_emissions_joined$address_clean)
-
-length(setdiff(data_centers_clean$address_clean,
-               air_emissions_joined$address_clean))
-
-length(setdiff(air_emissions_joined$address_clean,
-               data_centers_clean$address_clean))
-
-# Join the two datasets via address_clean so that the air_emissions_joined dataset has longtitude and latitude columns
-# Add a column on air emissions to data_centers_clean joining by street_address (PEC database)
+# Join the two datasets using the address_clean field so that the resulting air_emissions_joined dataset includes longitude and latitude coordinates.
+# Add a column on air emissions to data_centers_clean joining by street_address 
 
 # Check that address_clean exists in both datasets
 "address_clean" %in% colnames(air_emissions_joined)
@@ -394,15 +330,13 @@ emissions_coordinates_joined <- emissions_coordinates_joined %>%
 emissions_coordinates_joined %>%
   filter(is.na(lat) | is.na(long))
 
-# emissions_coordinates_joined
-
 # Remove coordinates with NAs
 emissions_tidy <- emissions_coordinates_joined %>%
   drop_na(lat, long)
 
-emissions_tidy
+glimpse(emissions_tidy)
 
-# Check removal worked - second number should be smaller than the firest week
+# Check removal worked - second number should be smaller than the first one
 nrow(emissions_coordinates_joined)
 nrow(emissions_tidy)
 

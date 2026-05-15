@@ -1,16 +1,16 @@
-#load libraries
+# Load libraries
 library(tidyverse)
 
-#Import CSV file on data centers in Virginia
-data_centers <- read.csv("data/processed/pec_data_centers.csv")
+# Import CSV file on data centers in Virginia
+data_centers <- read.csv("data/raw_data/pec_data_centers.csv")
 
-#show first 10 rows
+# Show first 10 rows
 head(data_centers, 10)
 
-#Create new dataframe
+# Create new dataframe
 data_centers_clean <- as.data.frame(data_centers)
 
-#Rename variables
+# Rename variables
 data_centers_clean <- data_centers_clean %>%
   rename(
     object_id = OBJECTID,
@@ -35,11 +35,11 @@ data_centers_clean <- data_centers_clean %>%
 
 # Can disregard #399 and #411 as they are proposed and we only want existing data centers; will filter for existing data centers next  
 
-#Select only relevant columns and rows
+# Select only relevant columns and rows
 data_centers_clean <- data_centers_clean %>%
     select(object_id, locality, name, street_address, owner_applicant, construction_type, build_status,lat, long) %>%
     filter(locality == "Loudoun County")%>% # keep only Loudoun County rows
     filter(build_status == "Existing")   # keep only Existing rows
 
-data_centers_clean
+glimpse(data_centers_clean)
 

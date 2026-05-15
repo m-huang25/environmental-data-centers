@@ -1,8 +1,8 @@
-#load library
+# Load library
 library(tidyverse)
 
 # Import CSV file on air_emissions for the year 2024 in Virginia. 
-air_sites_emissions <- read.csv("data/processed/air_sites_emissions.csv")
+air_sites_emissions <- read.csv("data/raw_data/Air_Sites_Emissions.csv")
 
 # Examine the variables of the dataset
 names(air_sites_emissions)
@@ -25,4 +25,4 @@ length(unique(air_sites_emissions_clean$pollutant_name))
 air_sites_emissions_clean <- air_sites_emissions_clean %>%
     select(emissions_year, emission_value, icis_id, pollutant_name)
 
-air_sites_emissions_clean
+glimpse(air_sites_emissions_clean)

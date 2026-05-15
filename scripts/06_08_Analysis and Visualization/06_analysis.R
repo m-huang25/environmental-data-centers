@@ -1,10 +1,8 @@
 #load libraries
 library(tidyverse)
-library(ggthemes)   
-library(sf)  
 
 # Import and clean dataset on air montoring sites in Virginia
-air_sites <- read.csv("data/processed/active_air_sites.csv")
+air_sites <- read.csv("data/raw_data/Active_Air_Sites.csv")
 
 # Examine the variables of the dataset
 names(air_sites)
@@ -23,7 +21,7 @@ air_sites_clean <- air_sites %>%
       icis_id = PLA_ICIS_ID
     )
 
-# List the categories within the "city" and "principal_product" categories
+# Determine how many categories are within the "city" and "principal_product" categories
 #unique(air_sites_clean$city)
 #unique(air_sites_clean$principal_product)
 length(unique(air_sites_clean$city))
@@ -35,10 +33,17 @@ air_sites_clean <- air_sites_clean %>%
     filter(city %in% c('Leesburg', 'Ashburn', 'Sterling', 'Aldie', 'Purcellville', 'Potomac Falls', 'Dulles', 'Bluemont', 'Chantilly'))%>% # cities in Loudoun County
     filter(principal_product %in% c('Data Center', 'data center', 'Data center', 'Data Processing', 'Information systems', 'Communications/Internet', 'Diesel Generators', 'Emergency Generation', 'Backup Power Generation')) # data center and data center-related words
 
-air_sites_clean
+glimpse(air_sites_clean)
+
+# Detemine is there are any missing values or NAs
+if (any(is.na(air_sites_clean))) {
+  print("There are missing values")
+} else {
+  print("No missing values ✅")
+}
 
 # Import CSV file on air_emissions for the year 2024 in Virginia. 
-air_sites_emissions <- read.csv("data/processed/air_sites_emissions.csv")
+air_sites_emissions <- read.csv("data/raw_data/Air_Sites_Emissions.csv")
 
 # Examine the variables of the dataset
 names(air_sites_emissions)
@@ -52,7 +57,7 @@ air_sites_emissions_clean <- air_sites_emissions %>%
       pollutant_name = CPL_POLLUTANT_NAME
     )
 
-# List the categories within the "pollutant_name" categories
+# List and count the categories within the "pollutant_name" categories
 
 unique(air_sites_emissions_clean$pollutant_name)
 length(unique(air_sites_emissions_clean$pollutant_name))
@@ -60,6 +65,21 @@ length(unique(air_sites_emissions_clean$pollutant_name))
 # Select only relevant columns
 air_sites_emissions_clean <- air_sites_emissions_clean %>%
     select(emissions_year, emission_value, icis_id, pollutant_name)
+
+glimpse(air_sites_emissions_clean) 
+
+# Check if missing values exist
+any(is.na(air_sites_emissions_clean))
+
+# Count total number of missing values
+sum(is.na(air_sites_emissions_clean))
+
+# Examine how many unique identifier have missing emission values
+num_missing_unique_identifiers <- air_sites_emissions_clean %>%
+  filter(is.na(emission_value)) %>%    # keep only rows where emission_value is missing
+  summarise(unique_identifiers_missing_emission_values = n_distinct(icis_id))
+
+num_missing_unique_identifiers
 
 # Join acive air site and air site emissions datasets
 
@@ -69,12 +89,42 @@ air_emissions_joined <- air_emissions_joined[complete.cases(air_emissions_joined
 
 glimpse (air_emissions_joined) # data is in long format
 
+# Examine unque number of data centers
+unique(air_emissions_joined$name)
+length(unique(air_emissions_joined$name))
+
+unique(air_emissions_joined$address)
+length(unique(air_emissions_joined$address))
+
+#Create a table of Cities
+table(air_emissions_joined$city)
+
+# Length of "emission_value" to determine count of unique value
+length(unique(air_emissions_joined$emission_value))
+
+# Analyze how many data centers are emitting each pollutant; distinct data centers can emit more than one pollutant
+
+unique(air_emissions_joined$pollutant_name)
+
+air_emissions_joined %>%
+  filter(principal_product %in% c('Data Center', 'data center', 'Data center', 'Data Processing', 'Information systems', 'Communications/Internet', 'Diesel Generators', 'Emergency Generation', 'Backup Power Generation')) %>%
+  group_by(pollutant_name) %>%
+  summarise(num_data_centers = n()) # num_data_centers is a new column name
 
 #Import CSV file on data centers in Virginia
-data_centers <- read.csv("data/processed/pec_data_centers.csv")
+data_centers <- read.csv("data/raw_data/pec_data_centers.csv")
 
 #show first 10 rows
 head(data_centers, 10)
+
+# Get the dimensions of the dataframe
+dim(data_centers)
+
+# Examine the variables of the dataset
+names(data_centers)
+
+# Examine the structure of the dataset
+str(data_centers)
 
 #Create new dataframe
 data_centers_clean <- as.data.frame(data_centers)
@@ -110,7 +160,7 @@ data_centers_clean <- data_centers_clean %>%
     filter(locality == "Loudoun County")%>% # keep only Loudoun County rows
     filter(build_status == "Existing")   # keep only Existing rows
 
-data_centers_clean
+glimpse(data_centers_clean)
 
 # Standarize the addresses in the air_emissions_joined and data_centers_clean (PEC) datasets
 
@@ -243,9 +293,21 @@ data_centers_clean <- data_centers_clean %>%
     TRUE ~ address_clean
   ))
 
+# Check what doesn't match
+setdiff(air_emissions_joined$address_clean,
+        data_centers_clean$address_clean)
+
+setdiff(data_centers_clean$address_clean,
+        air_emissions_joined$address_clean)
+
+length(setdiff(data_centers_clean$address_clean,
+               air_emissions_joined$address_clean))
+
+length(setdiff(air_emissions_joined$address_clean,
+               data_centers_clean$address_clean))
+
 # Join the two datasets via address_clean so that the air_emissions_joined dataset has longtitude and latitude columns
 # Add a column on air emissions to data_centers_clean joining by street_address (PEC database)
-
 
 # Check that address_clean exists in both datasets
 "address_clean" %in% colnames(air_emissions_joined)
@@ -327,131 +389,25 @@ emissions_coordinates_joined <- emissions_coordinates_joined %>%
   ) %>%
   select(-latitude, -longitude)  # drop the temporary manual columns
 
+# Double check that all addresses have latitude and longtitude
+
+emissions_coordinates_joined %>%
+  filter(is.na(lat) | is.na(long))
+
+# emissions_coordinates_joined
+
 # Remove coordinates with NAs
 emissions_tidy <- emissions_coordinates_joined %>%
   drop_na(lat, long)
 
-emissions_tidy
+glimpse(emissions_tidy)
+
+# Check removal worked - second number should be smaller than the firest week
+nrow(emissions_coordinates_joined)
+nrow(emissions_tidy)
+
+sum(is.na(emissions_tidy$lat))
+
+length(unique(emissions_tidy$address_clean))
 
 
-# Load the Loundoun boundary geojson file from local data
-boundary <- st_read("data/raw_data/Loudoun_County_Boundary.geojson")
-
-# Load the Loundoun waterbodies geojson file from local data
-water_bodies <- st_read("data/raw_data/Loudoun_Water_Bodies.geojson")
-
-  # Water bodies
-  #geom_sf(
-   # data = water_bodies,
-   # fill = "lightblue",
-   # color = "dodgerblue4",
-   # alpha = 0.6
-  #) 
-
-# Convert points (latitude and longitude of data centers) to spatial features using st_as_sf()
-
-emissions_sf <- st_as_sf(
-  emissions_tidy,
-  coords = c("long", "lat"),  # X first, Y second
-  crs = 4326                  # WGS84 (standard GPS)
-)
-
-# Add units of measurement. 
-
-emissions_sf <- emissions_sf %>%
-  mutate(
-    measurement_unit = case_when(
-      pollutant_name %in% c("Carbon Monoxide",
-                            "Nitrogen Oxide",
-                            "Sulfur Dioxide",
-                            "Volatile Organic Compounds") ~ "ppm",
-      pollutant_name %in% c(
-                            "Particulate Matter 2.5",
-                            "Particulate Matter 10") ~ "µg/m³",
-      TRUE ~ NA_character_
-    )
-  )
-
-# Create combined facet label
-emissions_sf <- emissions_sf %>%
-  mutate(pollutant_label = paste0(pollutant_name, "(", measurement_unit, ")")) # 
-
-# Convert to factor with specific order
-emissions_sf <- emissions_sf %>%
-  mutate(pollutant_label = factor(  # Must create pollutant_label first. Cannot factor it before it exists.)
-    pollutant_label,
-    levels = c(
-      "Carbon Monoxide (ppm)",
-      "Nitrogen Oxide (ppm)",
-      "Sulfur Dioxide (ppm)",
-      "Volatile Organic Compounds (ppm)",
-      "Particulate Matter 2.5 (µg/m³)",
-      "Particulate Matter 10 (µg/m³)"
-    )
-  ))
-
-# Split datasets by measurement unit
-
-emissions_gas <- emissions_sf %>%
-  filter(measurement_unit == "ppm")
-
-emissions_pm <- emissions_sf %>%
-  filter(measurement_unit == "µg/m³")
-
-# Map Gaseous Emissions 
-
-viz3_map_gas <- ggplot() +
-  geom_sf(data = boundary, fill = NA, color = "black", linewidth = 0.8) +
-  geom_sf(data = water_bodies, fill = "lightblue", color = "steelblue", alpha = 0.2) +
-  geom_sf(
-    data = emissions_gas,
-    aes(color = emission_value),
-    size = 2
-  ) +
- facet_wrap(~ pollutant_name) +
-  scale_color_viridis_c(
-    option = "viridis",
-    trans = "log10",
-    direction = -1, # reverses color scheme so dark color can reflect higher emission levels
-    name = "Emission (ppm)"
-  ) +
-  theme_minimal() +
-  labs(
-    title = str_wrap ("Higher Emissions Are Concentrated in Eastern County Near Multiple Water Bodies", width = 45),
-    subtitle = str_wrap ("Spatial Patterns of Log-Scaled Gaseous Emissions from Data Centers in Loudoun County (2024)", width = 60) 
-  ) +
-  theme(
-    strip.text = element_text(face = "bold"),
-    plot.title = element_text(face = "bold", size = 14)
-  )
-
-print(viz3_map_gas)
-
-# Map Particulate Emissions 
-
-viz3_map_pm <- ggplot() +
-  geom_sf(data = boundary, fill = NA, color = "black", linewidth = 0.8) +
-  geom_sf(data = water_bodies, fill = "lightblue", color = "steelblue", alpha = 0.2) +
-  geom_sf(
-    data = emissions_pm,
-    aes(color = emission_value),
-    size = 2
-  ) +
-  facet_wrap(~ pollutant_name) +
-  scale_color_viridis_c(
-    option = "viridis",
-    trans = "log10",
-    direction = -1, # reverses color scheme so dark color can reflect higher emission levels
-    name = "Emission (µg/m³)"
-  ) +
-  theme_minimal() +
-  labs(
-    title = str_wrap ("Higher Emissions Are Concentrated in Eastern County Near Multiple Water Bodies", width = 45),
-    subtitle = str_wrap ("Spatial Patterns of Log-Scaled Particulate Matter Emissions from Data Centers in Loudoun County (2024)", width = 60) 
-  ) +
-  theme(
-    strip.text = element_text(face = "bold"),
-    plot.title = element_text(face = "bold", size = 14)
-  )
-
-print(viz3_map_pm)
